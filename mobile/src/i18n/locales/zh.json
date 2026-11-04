@@ -518,7 +518,13 @@
       "windowCredits": "额外用量",
       "windowSession": "会话",
       "windowWeekly": "每周",
-      "windowWeeklyModel": "模型每周"
+      "windowWeeklyModel": "模型每周",
+      "switchAccount": "切换账号",
+      "continueWithoutWaiting": "无需等待，继续此聊天：",
+      "autoContinueCancelled": "Orca 不会自动继续此聊天。",
+      "autoContinueCancelFailed": "无法取消自动继续。请重试。",
+      "autoContinueScheduled": "Orca 将在 {{time}} 继续此聊天。",
+      "autoContinueCancel": "不要继续"
     },
     "useImageUpload": {
       "attachFailed": "添加失败",

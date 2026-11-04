@@ -3092,7 +3092,13 @@
       "windowCredits": "extra usage",
       "reachedNamed": "{{agent}} hit its {{window}} limit.",
       "reached": "{{agent}} hit its usage limit.",
-      "resetsAt": "It resets at {{when}}."
+      "resetsAt": "It resets at {{when}}.",
+      "switchAccount": "Switch Account",
+      "continueWithoutWaiting": "Continue this chat without waiting:",
+      "autoContinueCancelled": "Orca won't continue this chat automatically.",
+      "autoContinueCancelFailed": "Couldn't cancel automatic continuation. Try again.",
+      "autoContinueScheduled": "Orca will continue this chat at {{time}}.",
+      "autoContinueCancel": "Don't continue"
     },
     "composerPlaceholder": {
       "reconnecting": "Reconnecting…",

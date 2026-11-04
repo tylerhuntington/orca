@@ -518,7 +518,13 @@
       "windowCredits": "追加使用量",
       "windowSession": "セッション",
       "windowWeekly": "週間",
-      "windowWeeklyModel": "モデル別の週間"
+      "windowWeeklyModel": "モデル別の週間",
+      "switchAccount": "アカウントを切り替え",
+      "continueWithoutWaiting": "待たずにこのチャットを続ける：",
+      "autoContinueCancelled": "Orca はこのチャットを自動的には続けません。",
+      "autoContinueCancelFailed": "自動続行をキャンセルできませんでした。もう一度お試しください。",
+      "autoContinueScheduled": "Orca は {{time}} にこのチャットを続けます。",
+      "autoContinueCancel": "続けない"
     },
     "useImageUpload": {
       "attachFailed": "添付に失敗しました。",

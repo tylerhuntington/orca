@@ -40,6 +40,7 @@ import { NATIVE_CHAT_STOPPED_BEFORE_START_PRESENTATION } from '../../../../../sr
 import { MONO_SIZE, TEXT_SIZE, scaledType } from './mobile-native-chat-message-styles'
 import { MobileNativeChatOwnedScrollView } from './MobileNativeChatOwnedScrollView'
 import { toolStyles } from './mobile-native-chat-tool-styles'
+import { MobileNativeChatUsageLimitActions } from './MobileNativeChatUsageLimitActions'
 
 function toneColor(tone: NativeChatNoticeTone): string {
   return { warning: colors.statusAmber, error: colors.statusRed, notice: colors.textMuted }[tone]
@@ -286,6 +287,12 @@ export function MobileNativeChatNoticeRow({
               />
               {expanded ? diagnosticBody : null}
             </View>
+          ) : null}
+          {notice.usageLimitTurnItemId ? (
+            <MobileNativeChatUsageLimitActions
+              turnItemId={notice.usageLimitTurnItemId}
+              fontScale={fontScale}
+            />
           ) : null}
         </View>
       )

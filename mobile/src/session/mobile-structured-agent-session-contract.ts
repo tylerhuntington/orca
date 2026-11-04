@@ -25,6 +25,7 @@ import type {
 } from './native-chat/use-mobile-native-chat-send-error'
 import type { MobileStructuredQueuedMessageControls } from './use-mobile-structured-queued-message-controls'
 import type { MobileStructuredBackgroundTasks } from './use-mobile-structured-background-tasks'
+import type { MobileNativeChatUsageLimit } from './native-chat/use-mobile-native-chat-usage-limit'
 
 export type StructuredMobileSession = ReturnType<typeof useMobileStructuredAgentOptions> &
   ReturnType<typeof useMobileStructuredAgentTurnTiming> & {
@@ -60,6 +61,7 @@ export type StructuredMobileSession = ReturnType<typeof useMobileStructuredAgent
     backgroundTasks: MobileStructuredBackgroundTasks
     visualSource: MobileNativeChatVisualSource | null
     imagePreviewsByMessageId: Record<string, string[]>
+    usageLimit: MobileNativeChatUsageLimit | null
   }
 
 export type MobileStructuredAgentSessionArgs = {

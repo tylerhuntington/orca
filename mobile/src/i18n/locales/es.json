@@ -557,7 +557,13 @@
       "windowCredits": "de uso adicional",
       "windowSession": "de sesión",
       "windowWeekly": "semanal",
-      "windowWeeklyModel": "semanal del modelo"
+      "windowWeeklyModel": "semanal del modelo",
+      "switchAccount": "Cambiar de cuenta",
+      "continueWithoutWaiting": "Continúa este chat sin esperar:",
+      "autoContinueCancelled": "Orca no continuará este chat automáticamente.",
+      "autoContinueCancelFailed": "No se pudo cancelar la continuación automática. Inténtalo de nuevo.",
+      "autoContinueScheduled": "Orca continuará este chat a las {{time}}.",
+      "autoContinueCancel": "No continuar"
     },
     "useImageUpload": {
       "attachFailed": "No se pudo adjuntar",

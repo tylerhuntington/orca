@@ -29,6 +29,7 @@ import type { useMobileNativeChatSession } from './use-mobile-native-chat-sessio
 import type { MobileNativeChatSessionOptionPickersProps } from './input/MobileNativeChatSessionOptionPickers'
 import type { MobileNativeChatVisualSource } from './visual/mobile-native-chat-visual-read'
 import type { useMobileStructuredSessionCommands } from '../use-mobile-structured-session-commands'
+import type { MobileNativeChatUsageLimit } from './use-mobile-native-chat-usage-limit'
 
 export type MobileNativeChatController = {
   sessionViewReady: boolean
@@ -117,4 +118,5 @@ export type MobileNativeChatController = {
   nativeChatSessionOptions: MobileNativeChatSessionOptionPickersProps | null
   nativeChatSessionCommands: ReturnType<typeof useMobileStructuredSessionCommands>
   nativeChatAcceptsImages: boolean
+  nativeChatUsageLimit: MobileNativeChatUsageLimit | null
 }

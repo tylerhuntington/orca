@@ -17,13 +17,15 @@ import {
   AGENT_SESSION_QUEUED_MESSAGE_REORDER_RUNTIME_CAPABILITY,
   AGENT_SESSION_QUEUED_MESSAGE_IMAGE_EDIT_RUNTIME_CAPABILITY,
   AGENT_SESSION_PHONE_ATTACHMENTS_RUNTIME_CAPABILITY,
+  AGENT_SESSION_PHONE_USAGE_LIMIT_CONTINUE_CANCEL_RUNTIME_CAPABILITY,
   AGENT_SESSION_QUEUED_MESSAGE_SKILLS_EDIT_RUNTIME_CAPABILITY
 } from '../../../src/shared/agent-session/agent-session-runtime-capabilities'
 import { AGENT_SESSION_STATUS_FEED_RUNTIME_CAPABILITY } from '../../../src/shared/agent-session/agent-session-attention-capabilities'
 import {
   AGENT_SESSION_SEND_SELECTION_RUNTIME_CAPABILITY,
   AGENT_SESSION_SEND_OPTIONS_RUNTIME_CAPABILITY,
-  AGENT_SESSION_SEND_SKILLS_RUNTIME_CAPABILITY
+  AGENT_SESSION_SEND_SKILLS_RUNTIME_CAPABILITY,
+  AGENT_SESSION_USAGE_LIMIT_AUTO_CONTINUE_RUNTIME_CAPABILITY
 } from '../../../src/shared/agent-session/agent-session-create-capabilities'
 import {
   AGENT_SESSION_PERMISSION_MODES_RUNTIME_CAPABILITY,
@@ -64,6 +66,10 @@ export type StructuredAgentSessionHostSupport = {
   permissionOwn?: boolean
   itemDetail: boolean
   phoneAttachments: boolean
+  /** The host continues a usage-limited chat at its reset and publishes that on the status feed. */
+  usageLimitAutoContinue?: boolean
+  /** The host takes "Don't continue" from a phone. */
+  usageLimitContinueCancel?: boolean
 }
 
 export function structuredAgentSessionHostSupport(
@@ -97,6 +103,12 @@ export function structuredAgentSessionHostSupport(
     permissionOwn: capabilities.includes(AGENT_SESSION_PERMISSION_OWN_RUNTIME_CAPABILITY),
     permissionModes: capabilities.includes(AGENT_SESSION_PERMISSION_MODES_RUNTIME_CAPABILITY),
     itemDetail: capabilities.includes(AGENT_SESSION_ITEM_DETAIL_RUNTIME_CAPABILITY),
-    phoneAttachments: capabilities.includes(AGENT_SESSION_PHONE_ATTACHMENTS_RUNTIME_CAPABILITY)
+    phoneAttachments: capabilities.includes(AGENT_SESSION_PHONE_ATTACHMENTS_RUNTIME_CAPABILITY),
+    usageLimitAutoContinue: capabilities.includes(
+      AGENT_SESSION_USAGE_LIMIT_AUTO_CONTINUE_RUNTIME_CAPABILITY
+    ),
+    usageLimitContinueCancel: capabilities.includes(
+      AGENT_SESSION_PHONE_USAGE_LIMIT_CONTINUE_CANCEL_RUNTIME_CAPABILITY
+    )
   }
 }

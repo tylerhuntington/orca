@@ -1,17 +1,14 @@
-import type { AgentSessionUsageLimit } from '../../../../../src/shared/agent-session/failures/agent-session-usage-limit'
+import {
+  formatUsageLimitResetClock,
+  type AgentSessionUsageLimit
+} from '../../../../../src/shared/agent-session/failures/agent-session-usage-limit'
 import { joinSentences } from '../../../../../src/shared/sentence-joining'
 import type { Translate } from '../../../i18n/mobile-i18n'
 import { getUiIntlLocale } from '../../../i18n/ui-intl-locale'
 
-function usageLimitResetClock(resetsAt: number): string {
-  const at = new Date(resetsAt)
-  const today = at.toDateString() === new Date(Date.now()).toDateString()
-  return new Intl.DateTimeFormat(
-    getUiIntlLocale(),
-    today
-      ? { hour: 'numeric', minute: '2-digit' }
-      : { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }
-  ).format(at)
+/** A reset time in the phone's UI language. */
+export function usageLimitResetClock(resetsAt: number): string {
+  return formatUsageLimitResetClock(resetsAt, Date.now(), getUiIntlLocale())
 }
 
 export function nativeChatUsageLimitText(

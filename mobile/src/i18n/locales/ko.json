@@ -518,7 +518,13 @@
       "windowCredits": "추가 사용량",
       "windowSession": "세션",
       "windowWeekly": "주간",
-      "windowWeeklyModel": "모델별 주간"
+      "windowWeeklyModel": "모델별 주간",
+      "switchAccount": "계정 전환",
+      "continueWithoutWaiting": "기다리지 않고 이 채팅을 계속하세요:",
+      "autoContinueCancelled": "Orca가 이 채팅을 자동으로 계속하지 않습니다.",
+      "autoContinueCancelFailed": "자동 계속을 취소하지 못했습니다. 다시 시도하세요.",
+      "autoContinueScheduled": "Orca가 {{time}}에 이 채팅을 계속합니다.",
+      "autoContinueCancel": "계속하지 않기"
     },
     "useImageUpload": {
       "attachFailed": "첨부 실패",
