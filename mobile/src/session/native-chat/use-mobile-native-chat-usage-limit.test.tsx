@@ -10,7 +10,7 @@ import { structuredAgentSessionHostSupport } from '../mobile-structured-agent-se
 import { useMobileNativeChatUsageLimit } from './use-mobile-native-chat-usage-limit'
 
 const TURN = agentJournalItemKey({ provider: 'claude', sessionId: 's', uuid: 'cut' })
-const RESETS_AT = Date.now() + 60 * 60 * 1000
+const RESETS_AT = 1_800_000_000_000
 
 const limitedChat: AgentJournalRenderItem[] = [
   {
