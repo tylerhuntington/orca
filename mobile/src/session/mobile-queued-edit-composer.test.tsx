@@ -40,6 +40,9 @@ beforeAll(async () => {
 
 const picker = vi.hoisted(() => ({ pickFiles: vi.fn(), pickImages: vi.fn() }))
 vi.mock('../components/MobileSwitch', () => ({ MobileSwitch: 'Switch' }))
+vi.mock('./native-chat/composer/MobileNativeChatContextUsageRing', () => ({
+  useMobileNativeChatContextRing: () => ({ barProps: {}, ring: null })
+}))
 vi.mock('../platform/media-picker', () => ({ useMediaPicker: () => picker }))
 vi.mock('../components/DragReorderList', () => ({ DragReorderList: 'DragReorderList' }))
 vi.mock('react-native-reanimated', async () => {
@@ -474,7 +477,7 @@ describe('real phone inline composer from More through picker pruning and host b
         )
         await open()
         expect(state.hook!.queued.editor?.text).toBe('user replacement')
-        expect(state.hook!.queued.cards[0]?.attribution).toBeNull()
+        expect(state.hook!.queued.cards[0]?.from).toBeUndefined()
       } finally {
         await rig.dispose()
         clock.mockRestore()
