@@ -1,8 +1,5 @@
 import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
-import {
-  isNativeChatUsageLimitCutSchedulable,
-  latestNativeChatUsageLimitCut
-} from '../../../../src/shared/native-chat/native-chat-usage-limit-cut'
+import { latestNativeChatUsageLimitCut } from '../../../../src/shared/native-chat/native-chat-usage-limit-cut'
 import {
   nativeChatUsageLimitAutoContinueKind,
   usageLimitContinueStateForCut
@@ -46,7 +43,7 @@ export function useMobileNativeChatUsageLimit(
     submissions: readonly Pick<AgentJournalSubmission, 'dispatchState'>[]
   },
   /** Busy: working or sending, when the cut is not the chat's last word. */
-  turn: { busy: boolean; canSwitchAccount: boolean | undefined }
+  turn: { busy: boolean; canSwitchAccount: boolean }
 ): MobileNativeChatUsageLimit | null {
   const { client, sessionId, hostSupport } = chat
   const { items, submissions } = journal
@@ -66,7 +63,7 @@ export function useMobileNativeChatUsageLimit(
     turnItemId !== null &&
     resetsAt !== undefined &&
     hostSupport?.statusFeed === true &&
-    hostSupport.usageLimitAutoContinue === true
+    hostSupport.usageLimitAutoContinue
       ? mobileStructuredSessionStatusFeed(client)
       : null
   const subscribe = useCallback(
@@ -81,12 +78,8 @@ export function useMobileNativeChatUsageLimit(
     [feed, sessionId, cut]
   )
   const state = useSyncExternalStore(subscribe, readState, readState)
-  // Fresh wall time on every render; the host also republishes a cut that ages out.
-  const schedulable = useSyncExternalStore(
-    noSubscription,
-    () => cut !== null && isNativeChatUsageLimitCutSchedulable(cut, Date.now())
-  )
-  const kind = nativeChatUsageLimitAutoContinueKind(state, { schedulable, localHost: false })
+  // The host publishes no state for a cut it can't schedule and republishes one that ages out.
+  const kind = nativeChatUsageLimitAutoContinueKind(state, { schedulable: true, localHost: false })
   const [cancellingCut, setCancellingCut] = useState<string | null>(null)
   const [failedCut, setFailedCut] = useState<string | null>(null)
   const cancelling = cancellingCut !== null && cancellingCut === turnItemId
@@ -129,6 +122,6 @@ export function useMobileNativeChatUsageLimit(
         : kind === 'cancelled'
           ? { kind }
           : null
-    return { turnItemId, autoContinue, canSwitchAccount: turn.canSwitchAccount === true }
+    return { turnItemId, autoContinue, canSwitchAccount: turn.canSwitchAccount }
   }, [turnItemId, kind, resetsAt, canCancel, cancel, cancelling, failedCut, turn.canSwitchAccount])
 }

@@ -211,11 +211,8 @@ export function useMobileStructuredAgentOptions(args: {
       conversationSupport?.sessionId === sessionId ? conversationSupport.commands : NO_COMMANDS,
     compactInstructions:
       conversationSupport?.sessionId === sessionId && conversationSupport.compactInstructions,
-    /** Whether this chat can move to another account; undefined until the host answers. */
     canSwitchAccount:
-      conversationSupport?.sessionId === sessionId
-        ? conversationSupport.canSwitchAccount
-        : undefined,
+      conversationSupport?.sessionId === sessionId && conversationSupport.canSwitchAccount,
     acceptsImages:
       (imageSupport?.sessionId === sessionId ? imageSupport.acceptsImages : undefined) ??
       (agent !== null && isAgentSessionHandleProvider(agent)),

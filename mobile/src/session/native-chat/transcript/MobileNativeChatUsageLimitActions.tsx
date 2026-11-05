@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { Pressable, Text, View } from 'react-native'
+import { Pressable, StyleSheet, Text, View } from 'react-native'
 import {
   colors,
   feedback,
@@ -123,6 +123,8 @@ const styles = themedStyleSheet(() => ({
   },
   button: {
     minHeight: 44,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: colors.borderSubtle,
     justifyContent: 'center',
     backgroundColor: colors.bgRaised,
     borderRadius: radii.control,

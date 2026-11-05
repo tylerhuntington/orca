@@ -67,9 +67,9 @@ export type StructuredAgentSessionHostSupport = {
   itemDetail: boolean
   phoneAttachments: boolean
   /** The host continues a usage-limited chat at its reset and publishes that on the status feed. */
-  usageLimitAutoContinue?: boolean
+  usageLimitAutoContinue: boolean
   /** The host takes "Don't continue" from a phone. */
-  usageLimitContinueCancel?: boolean
+  usageLimitContinueCancel: boolean
 }
 
 export function structuredAgentSessionHostSupport(

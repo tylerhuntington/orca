@@ -9,7 +9,7 @@ import { stubRpcClient } from '../../transport/rpc-client-test-stub'
 import { structuredAgentSessionHostSupport } from '../mobile-structured-agent-session-host-support'
 import { useMobileNativeChatUsageLimit } from './use-mobile-native-chat-usage-limit'
 
-const TURN = agentJournalItemKey({ provider: 'claude', threadId: 't', turnId: 'cut', ordinal: 1 })
+const TURN = agentJournalItemKey({ provider: 'claude', sessionId: 's', uuid: 'cut' })
 const RESETS_AT = Date.now() + 60 * 60 * 1000
 
 const limitedChat: AgentJournalRenderItem[] = [
