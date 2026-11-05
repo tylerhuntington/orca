@@ -25,6 +25,7 @@ import {
   AGENT_SESSION_SEND_SELECTION_RUNTIME_CAPABILITY,
   AGENT_SESSION_SEND_OPTIONS_RUNTIME_CAPABILITY,
   AGENT_SESSION_SEND_SKILLS_RUNTIME_CAPABILITY,
+  AGENT_SESSION_SEND_USAGE_LIMIT_CONTINUATION_RUNTIME_CAPABILITY,
   AGENT_SESSION_USAGE_LIMIT_AUTO_CONTINUE_RUNTIME_CAPABILITY
 } from '../../../src/shared/agent-session/agent-session-create-capabilities'
 import {
@@ -70,6 +71,8 @@ export type StructuredAgentSessionHostSupport = {
   usageLimitAutoContinue: boolean
   /** The host takes "Don't continue" from a phone. */
   usageLimitContinueCancel: boolean
+  /** A send may name the usage-limit cut it continues. */
+  sendUsageLimitContinuation: boolean
 }
 
 export function structuredAgentSessionHostSupport(
@@ -109,6 +112,9 @@ export function structuredAgentSessionHostSupport(
     ),
     usageLimitContinueCancel: capabilities.includes(
       AGENT_SESSION_PHONE_USAGE_LIMIT_CONTINUE_CANCEL_RUNTIME_CAPABILITY
+    ),
+    sendUsageLimitContinuation: capabilities.includes(
+      AGENT_SESSION_SEND_USAGE_LIMIT_CONTINUATION_RUNTIME_CAPABILITY
     )
   }
 }

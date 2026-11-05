@@ -211,8 +211,6 @@ export function useMobileStructuredAgentOptions(args: {
       conversationSupport?.sessionId === sessionId ? conversationSupport.commands : NO_COMMANDS,
     compactInstructions:
       conversationSupport?.sessionId === sessionId && conversationSupport.compactInstructions,
-    canSwitchAccount:
-      conversationSupport?.sessionId === sessionId && conversationSupport.canSwitchAccount,
     acceptsImages:
       (imageSupport?.sessionId === sessionId ? imageSupport.acceptsImages : undefined) ??
       (agent !== null && isAgentSessionHandleProvider(agent)),

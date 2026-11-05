@@ -1,34 +1,38 @@
-import { useCallback, useMemo, useState, useSyncExternalStore } from 'react'
-import { latestNativeChatUsageLimitCut } from '../../../../src/shared/native-chat/native-chat-usage-limit-cut'
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import {
+  latestNativeChatUsageLimitCut,
+  NATIVE_CHAT_USAGE_LIMIT_CONTINUE_MESSAGE
+} from '../../../../src/shared/native-chat/native-chat-usage-limit-cut'
 import {
   nativeChatUsageLimitAutoContinueKind,
-  usageLimitContinueStateForCut
+  usageLimitContinueStateForCut,
+  type NativeChatUsageLimitAutoContinueKind
 } from '../../../../src/shared/native-chat/native-chat-usage-limit-auto-continue'
 import type {
   AgentJournalRenderItem,
   AgentJournalSubmission
 } from '../../../../src/shared/agent-session/journal/agent-session-journal-types'
+import type { AgentSessionOptionsResult } from '../../../../src/shared/agent-session/options/agent-session-options-result'
 import { mobileStructuredSessionStatusFeed } from '../mobile-structured-session-status-feed'
 import { callAgentSession } from '../mobile-structured-agent-session-rpc'
-import type { MobileStructuredAgentSessionArgs } from '../mobile-structured-agent-session-contract'
-
-export type MobileNativeChatUsageLimitAutoContinue =
-  | {
-      kind: 'scheduled'
-      resetsAt: number
-      /** Null on a host that refuses "Don't continue" from a phone. */
-      cancel: (() => void) | null
-      cancelling: boolean
-      cancelFailed: boolean
-    }
-  | { kind: 'cancelled' }
+import type {
+  MobileStructuredAgentSessionArgs,
+  StructuredMobileSession
+} from '../mobile-structured-agent-session-contract'
 
 /** The usage-limit row the person can act on: the latest cut while nothing is running or sending. */
 export type MobileNativeChatUsageLimit = {
   turnItemId: string
-  autoContinue: MobileNativeChatUsageLimitAutoContinue | null
-  /** The host says this chat's next turn can run on another of its Claude accounts. */
-  canSwitchAccount: boolean
+  /** The host's automatic continue for this cut; null when it has none to show. */
+  autoContinue: Exclude<NativeChatUsageLimitAutoContinueKind, 'off'> | null
+  /** Null on a host that refuses "Don't continue" from a phone. */
+  cancel: (() => void) | null
+  cancelling: boolean
+  cancelFailed: boolean
+  /** Asked once per cut, so the row draws its actions once; undefined until the host answers. */
+  canSwitchAccount: boolean | undefined
+  /** Sends desktop's "Continue where you left off." for this cut. */
+  continueNow: () => void
 }
 
 const noSubscription = (): (() => void) => () => {}
@@ -43,9 +47,10 @@ export function useMobileNativeChatUsageLimit(
     submissions: readonly Pick<AgentJournalSubmission, 'dispatchState'>[]
   },
   /** Busy: working or sending, when the cut is not the chat's last word. */
-  turn: { busy: boolean; canSwitchAccount: boolean }
+  turn: { busy: boolean; send: StructuredMobileSession['sendWithOutcome'] }
 ): MobileNativeChatUsageLimit | null {
   const { client, sessionId, hostSupport } = chat
+  const live = chat.enabled && chat.connected
   const { items, submissions } = journal
   // While the chat works or sends no cut is actionable, so skip the transcript scan per chunk.
   const cut = useMemo(
@@ -56,8 +61,7 @@ export function useMobileNativeChatUsageLimit(
   const resetsAt = cut?.resetsAt
   // The host alone continues the chat at its reset; the phone only shows and cancels that.
   const feed =
-    chat.enabled &&
-    chat.connected &&
+    live &&
     client &&
     sessionId &&
     turnItemId !== null &&
@@ -80,6 +84,26 @@ export function useMobileNativeChatUsageLimit(
   const state = useSyncExternalStore(subscribe, readState, readState)
   // The host publishes no state for a cut it can't schedule and republishes one that ages out.
   const kind = nativeChatUsageLimitAutoContinueKind(state, { schedulable: true, localHost: false })
+  // The chat's last options answer predates the cut (the host says no until one exists), so ask now.
+  const [switchAnswer, setSwitchAnswer] = useState<{ cut: string; canSwitch: boolean } | null>(null)
+  useEffect(() => {
+    if (!live || !client || !sessionId || turnItemId === null) {
+      return
+    }
+    let current = true
+    const answer = (canSwitch: boolean): void => {
+      if (current) {
+        setSwitchAnswer({ cut: turnItemId, canSwitch })
+      }
+    }
+    callAgentSession<AgentSessionOptionsResult>(client, 'agentSession.options', { sessionId }).then(
+      (result) => answer(result.canSwitchAccount === true),
+      () => answer(false)
+    )
+    return () => {
+      current = false
+    }
+  }, [live, client, sessionId, turnItemId])
   const [cancellingCut, setCancellingCut] = useState<string | null>(null)
   const [failedCut, setFailedCut] = useState<string | null>(null)
   const cancelling = cancellingCut !== null && cancellingCut === turnItemId
@@ -105,23 +129,36 @@ export function useMobileNativeChatUsageLimit(
       .catch(() => setFailedCut(cancelled))
       .finally(() => setCancellingCut((current) => (current === cancelled ? null : current)))
   }, [cancelling, client, sessionId, cut, readState])
+  const { send } = turn
+  const continuationCapable = hostSupport?.sendUsageLimitContinuation === true
+  const continueNow = useCallback(() => {
+    if (turnItemId === null) {
+      return
+    }
+    // A host that knows the cut refuses it once the chat has moved on; older hosts take a plain message.
+    void send(
+      NATIVE_CHAT_USAGE_LIMIT_CONTINUE_MESSAGE,
+      [],
+      undefined,
+      undefined,
+      undefined,
+      continuationCapable ? { usageLimitContinuationOfTurnItemId: turnItemId } : {}
+    )
+  }, [send, turnItemId, continuationCapable])
   const canCancel = hostSupport?.usageLimitContinueCancel === true
   return useMemo(() => {
     if (turnItemId === null) {
       return null
     }
-    const autoContinue: MobileNativeChatUsageLimitAutoContinue | null =
-      kind === 'scheduled' && resetsAt !== undefined
-        ? {
-            kind,
-            resetsAt,
-            cancel: canCancel ? cancel : null,
-            cancelling,
-            cancelFailed: failedCut === turnItemId
-          }
-        : kind === 'cancelled'
-          ? { kind }
-          : null
-    return { turnItemId, autoContinue, canSwitchAccount: turn.canSwitchAccount }
-  }, [turnItemId, kind, resetsAt, canCancel, cancel, cancelling, failedCut, turn.canSwitchAccount])
+    return {
+      turnItemId,
+      autoContinue: kind === 'off' ? null : kind,
+      cancel: kind === 'scheduled' && canCancel ? cancel : null,
+      cancelling,
+      cancelFailed: failedCut === turnItemId,
+      canSwitchAccount:
+        switchAnswer?.cut === turnItemId ? switchAnswer.canSwitch : live ? undefined : false,
+      continueNow
+    }
+  }, [turnItemId, kind, canCancel, cancel, cancelling, failedCut, switchAnswer, live, continueNow])
 }

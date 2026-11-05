@@ -50,36 +50,18 @@ afterEach(() => act(() => renderer?.unmount()))
 const FEED = 'agent-session.status-feed.v1'
 const AUTO_CONTINUE = 'agent-session.usage-limit-auto-continue.v1'
 const PHONE_CANCEL = 'agent-session.usage-limit-auto-continue.phone-cancel.v1'
+const CONTINUATION = 'agent-session.send-usage-limit-continuation.v1'
 
-function mount(client: RpcClient, capabilities: string[]) {
-  function Probe() {
-    latest = useMobileNativeChatUsageLimit(
-      {
-        client,
-        sessionId: 'session-1',
-        enabled: true,
-        connected: true,
-        hostSupport: structuredAgentSessionHostSupport(capabilities)
-      },
-      { items: limitedChat, submissions: [] },
-      { busy: false, canSwitchAccount: true }
-    )
-    return null
-  }
-  act(() => {
-    renderer = create(createElement(Probe))
-  })
-}
-
-function hostScheduling() {
-  const send = vi.fn<RpcClient['sendRequest']>(async () => ({
+async function mount(capabilities: string[]) {
+  const host = vi.fn<RpcClient['sendRequest']>(async (method) => ({
     ok: true as const,
-    result: { ok: true },
+    result:
+      method === 'agentSession.options' ? { models: [], canSwitchAccount: true } : { ok: true },
     id: 'r',
     _meta: { runtimeId: 'host' }
   }))
   const client = stubRpcClient({
-    sendRequest: send,
+    sendRequest: host,
     subscribe: (_method, _params, onData) => {
       onData({
         type: 'snapshot',
@@ -97,34 +79,54 @@ function hostScheduling() {
       return () => {}
     }
   })
-  return { client, send }
+  const send = vi.fn(async () => 'accepted' as const)
+  function Probe() {
+    latest = useMobileNativeChatUsageLimit(
+      {
+        client,
+        sessionId: 'session-1',
+        enabled: true,
+        connected: true,
+        hostSupport: structuredAgentSessionHostSupport(capabilities)
+      },
+      { items: limitedChat, submissions: [] },
+      { busy: false, send }
+    )
+    return null
+  }
+  await act(async () => {
+    renderer = create(createElement(Probe))
+  })
+  return { host, send }
 }
 
-it("shows the host's automatic continue and cancels it with the cut's identity", async () => {
-  const { client, send } = hostScheduling()
-  mount(client, [FEED, AUTO_CONTINUE, PHONE_CANCEL])
+it("acts on the latest cut with the host's answers: cancel, continue and account move", async () => {
+  const { host, send } = await mount([FEED, AUTO_CONTINUE, PHONE_CANCEL, CONTINUATION])
 
   expect(latest).toMatchObject({
     turnItemId: TURN,
-    canSwitchAccount: true,
-    autoContinue: { kind: 'scheduled', resetsAt: RESETS_AT, cancelling: false }
+    autoContinue: 'scheduled',
+    canSwitchAccount: true
   })
-  const scheduled = latest?.autoContinue
-  await act(async () => {
-    if (scheduled?.kind === 'scheduled') {
-      scheduled.cancel?.()
-    }
-  })
-  expect(send).toHaveBeenCalledWith(
+  await act(async () => latest?.cancel?.())
+  expect(host).toHaveBeenCalledWith(
     'agentSession.cancelUsageLimitContinue',
     { sessionId: 'session-1', turnItemId: TURN, resetsAt: RESETS_AT },
     expect.anything()
   )
+  act(() => latest?.continueNow())
+  expect(send).toHaveBeenCalledWith(
+    'Continue where you left off.',
+    [],
+    undefined,
+    undefined,
+    undefined,
+    { usageLimitContinuationOfTurnItemId: TURN }
+  )
 })
 
-it("offers no Don't continue on a host that refuses it from a phone", () => {
-  const { client } = hostScheduling()
-  mount(client, [FEED, AUTO_CONTINUE])
+it("offers no Don't continue on a host that refuses it from a phone", async () => {
+  await mount([FEED, AUTO_CONTINUE])
 
-  expect(latest?.autoContinue).toMatchObject({ kind: 'scheduled', cancel: null })
+  expect(latest).toMatchObject({ autoContinue: 'scheduled', cancel: null })
 })
