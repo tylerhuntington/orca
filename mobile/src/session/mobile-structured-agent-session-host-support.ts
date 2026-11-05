@@ -17,6 +17,7 @@ import {
   AGENT_SESSION_QUEUED_MESSAGE_REORDER_RUNTIME_CAPABILITY,
   AGENT_SESSION_QUEUED_MESSAGE_IMAGE_EDIT_RUNTIME_CAPABILITY,
   AGENT_SESSION_PHONE_ATTACHMENTS_RUNTIME_CAPABILITY,
+  AGENT_SESSION_PHONE_REWIND_RUNTIME_CAPABILITY,
   AGENT_SESSION_QUEUED_MESSAGE_SKILLS_EDIT_RUNTIME_CAPABILITY
 } from '../../../src/shared/agent-session/agent-session-runtime-capabilities'
 import { AGENT_SESSION_STATUS_FEED_RUNTIME_CAPABILITY } from '../../../src/shared/agent-session/agent-session-attention-capabilities'
@@ -64,6 +65,8 @@ export type StructuredAgentSessionHostSupport = {
   permissionOwn?: boolean
   itemDetail: boolean
   phoneAttachments: boolean
+  /** Older hosts advertise rewind but refuse it from a phone. */
+  phoneRewind?: boolean
 }
 
 export function structuredAgentSessionHostSupport(
@@ -97,6 +100,7 @@ export function structuredAgentSessionHostSupport(
     permissionOwn: capabilities.includes(AGENT_SESSION_PERMISSION_OWN_RUNTIME_CAPABILITY),
     permissionModes: capabilities.includes(AGENT_SESSION_PERMISSION_MODES_RUNTIME_CAPABILITY),
     itemDetail: capabilities.includes(AGENT_SESSION_ITEM_DETAIL_RUNTIME_CAPABILITY),
-    phoneAttachments: capabilities.includes(AGENT_SESSION_PHONE_ATTACHMENTS_RUNTIME_CAPABILITY)
+    phoneAttachments: capabilities.includes(AGENT_SESSION_PHONE_ATTACHMENTS_RUNTIME_CAPABILITY),
+    phoneRewind: capabilities.includes(AGENT_SESSION_PHONE_REWIND_RUNTIME_CAPABILITY)
   }
 }
