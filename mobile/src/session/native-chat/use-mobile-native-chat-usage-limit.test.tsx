@@ -6,7 +6,7 @@ import { agentJournalItemKey } from '../../../../src/shared/agent-session/journa
 import type { AgentJournalRenderItem } from '../../../../src/shared/agent-session/journal/agent-session-journal-types'
 import type { RpcClient } from '../../transport/rpc-client'
 import { stubRpcClient } from '../../transport/rpc-client-test-stub'
-import type { StructuredAgentSessionHostSupport } from '../mobile-structured-agent-session-host-support'
+import { structuredAgentSessionHostSupport } from '../mobile-structured-agent-session-host-support'
 import { useMobileNativeChatUsageLimit } from './use-mobile-native-chat-usage-limit'
 
 const TURN = agentJournalItemKey({ provider: 'claude', threadId: 't', turnId: 'cut', ordinal: 1 })
@@ -47,7 +47,11 @@ let latest: ReturnType<typeof useMobileNativeChatUsageLimit> | undefined
 let renderer: ReactTestRenderer | undefined
 afterEach(() => act(() => renderer?.unmount()))
 
-function mount(client: RpcClient, support: Partial<StructuredAgentSessionHostSupport>) {
+const FEED = 'agent-session.status-feed.v1'
+const AUTO_CONTINUE = 'agent-session.usage-limit-auto-continue.v1'
+const PHONE_CANCEL = 'agent-session.usage-limit-auto-continue.phone-cancel.v1'
+
+function mount(client: RpcClient, capabilities: string[]) {
   function Probe() {
     latest = useMobileNativeChatUsageLimit(
       {
@@ -55,7 +59,7 @@ function mount(client: RpcClient, support: Partial<StructuredAgentSessionHostSup
         sessionId: 'session-1',
         enabled: true,
         connected: true,
-        hostSupport: support as StructuredAgentSessionHostSupport
+        hostSupport: structuredAgentSessionHostSupport(capabilities)
       },
       { items: limitedChat, submissions: [] },
       { busy: false, canSwitchAccount: true }
@@ -98,7 +102,7 @@ function hostScheduling() {
 
 it("shows the host's automatic continue and cancels it with the cut's identity", async () => {
   const { client, send } = hostScheduling()
-  mount(client, { statusFeed: true, usageLimitAutoContinue: true, usageLimitContinueCancel: true })
+  mount(client, [FEED, AUTO_CONTINUE, PHONE_CANCEL])
 
   expect(latest).toMatchObject({
     turnItemId: TURN,
@@ -120,7 +124,7 @@ it("shows the host's automatic continue and cancels it with the cut's identity",
 
 it("offers no Don't continue on a host that refuses it from a phone", () => {
   const { client } = hostScheduling()
-  mount(client, { statusFeed: true, usageLimitAutoContinue: true })
+  mount(client, [FEED, AUTO_CONTINUE])
 
   expect(latest?.autoContinue).toMatchObject({ kind: 'scheduled', cancel: null })
 })
