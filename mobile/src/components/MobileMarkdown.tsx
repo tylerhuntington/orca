@@ -65,6 +65,7 @@ function MobileMarkdownContent({
   const tone = MARKDOWN_TONES[toneName]
   const ctx: MarkdownBlockContext = {
     growing,
+    chatMath,
     onOpenFile,
     tone,
     textScale,

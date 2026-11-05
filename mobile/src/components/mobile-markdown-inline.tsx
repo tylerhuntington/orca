@@ -18,6 +18,8 @@ export type MarkdownInlineContext = {
   onOpenFile?: (pathText: string) => void
   tone: MarkdownTone
   textScale: number
+  /** Chat text: desktop chat's math delimiters and sizes; otherwise GitHub's. */
+  chatMath: boolean
 }
 
 type SpanStyle = TextProps['style']
@@ -141,6 +143,7 @@ function renderPhrasing(
           value={node.value}
           source={node.source}
           display={false}
+          githubSizes={!ctx.chatMath}
           style={outer}
         />
       )
