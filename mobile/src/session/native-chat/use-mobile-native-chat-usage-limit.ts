@@ -11,7 +11,6 @@ import type {
   AgentJournalRenderItem,
   AgentJournalSubmission
 } from '../../../../src/shared/agent-session/journal/agent-session-journal-types'
-import { useNow } from '../../hooks/use-now'
 import { mobileStructuredSessionStatusFeed } from '../mobile-structured-session-status-feed'
 import { callAgentSession } from '../mobile-structured-agent-session-rpc'
 import type { MobileStructuredAgentSessionArgs } from '../mobile-structured-agent-session-contract'
@@ -78,9 +77,11 @@ export function useMobileNativeChatUsageLimit(
     [feed, sessionId, cut]
   )
   const state = useSyncExternalStore(subscribe, readState, readState)
-  // A row on screen when its cut ages out hides the automatic line.
-  const now = useNow(60_000, state !== undefined)
-  const schedulable = cut !== null && isNativeChatUsageLimitCutSchedulable(cut, now)
+  // Fresh wall time on every render; the host also republishes a cut that ages out.
+  const schedulable = useSyncExternalStore(
+    noSubscription,
+    () => cut !== null && isNativeChatUsageLimitCutSchedulable(cut, Date.now())
+  )
   const kind = nativeChatUsageLimitAutoContinueKind(state, { schedulable, localHost: false })
   const [cancelling, setCancelling] = useState(false)
   const [failedCut, setFailedCut] = useState<string | null>(null)

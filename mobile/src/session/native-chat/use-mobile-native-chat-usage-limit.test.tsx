@@ -9,8 +9,6 @@ import { stubRpcClient } from '../../transport/rpc-client-test-stub'
 import type { StructuredAgentSessionHostSupport } from '../mobile-structured-agent-session-host-support'
 import { useMobileNativeChatUsageLimit } from './use-mobile-native-chat-usage-limit'
 
-vi.mock('../../hooks/use-now', () => ({ useNow: () => Date.now() }))
-
 const TURN = agentJournalItemKey({ provider: 'claude', threadId: 't', turnId: 'cut', ordinal: 1 })
 const RESETS_AT = Date.now() + 60 * 60 * 1000
 
