@@ -50,8 +50,12 @@ export function useMobileNativeChatUsageLimit(
 ): MobileNativeChatUsageLimit | null {
   const { client, sessionId, hostSupport } = chat
   const { items, submissions } = journal
-  const cut = useMemo(() => latestNativeChatUsageLimitCut(items, submissions), [items, submissions])
-  const turnItemId = cut && !turn.busy ? cut.turnItemId : null
+  // While the chat works or sends no cut is actionable, so skip the transcript scan per chunk.
+  const cut = useMemo(
+    () => (turn.busy ? null : latestNativeChatUsageLimitCut(items, submissions)),
+    [turn.busy, items, submissions]
+  )
+  const turnItemId = cut?.turnItemId ?? null
   const resetsAt = cut?.resetsAt
   // The host alone continues the chat at its reset; the phone only shows and cancels that.
   const feed =
@@ -83,8 +87,9 @@ export function useMobileNativeChatUsageLimit(
     () => cut !== null && isNativeChatUsageLimitCutSchedulable(cut, Date.now())
   )
   const kind = nativeChatUsageLimitAutoContinueKind(state, { schedulable, localHost: false })
-  const [cancelling, setCancelling] = useState(false)
+  const [cancellingCut, setCancellingCut] = useState<string | null>(null)
   const [failedCut, setFailedCut] = useState<string | null>(null)
+  const cancelling = cancellingCut !== null && cancellingCut === turnItemId
   const cancel = useCallback(() => {
     // Read the feed now: the schedule may have changed since this row last rendered.
     if (
@@ -96,16 +101,16 @@ export function useMobileNativeChatUsageLimit(
     ) {
       return
     }
-    const failed = cut.turnItemId
-    setCancelling(true)
+    const cancelled = cut.turnItemId
+    setCancellingCut(cancelled)
     setFailedCut(null)
     void callAgentSession(client, 'agentSession.cancelUsageLimitContinue', {
       sessionId,
       turnItemId: cut.turnItemId,
       resetsAt: cut.resetsAt
     })
-      .catch(() => setFailedCut(failed))
-      .finally(() => setCancelling(false))
+      .catch(() => setFailedCut(cancelled))
+      .finally(() => setCancellingCut((current) => (current === cancelled ? null : current)))
   }, [cancelling, client, sessionId, cut, readState])
   const canCancel = hostSupport?.usageLimitContinueCancel === true
   return useMemo(() => {
